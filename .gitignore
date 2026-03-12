@@ -1,0 +1,14 @@
+﻿# Generated docx unpack/build artifacts
+.docx-build/
+docx-inspect/
+
+# System files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor temp files
+*.tmp
+*.temp
+*.bak
+*.swp

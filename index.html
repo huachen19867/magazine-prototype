@@ -1,0 +1,168 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>群本纪</title>
+  <meta name="description" content="《群本纪》数字卷册单入口，内含长卷漫游与群史目录两种阅读视图。" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="index.html#home-view">Ka21·群本纪</a>
+    <nav>
+      <a href="pages/preface.html">卷首</a>
+      <a data-view-link href="#scroll-view">长卷</a>
+      <a data-view-link href="#archive-view">目录</a>
+    </nav>
+  </header>
+
+  <aside class="left-rail" id="leftRail">
+    <button class="left-rail-toggle" id="leftRailToggle" type="button" aria-label="切换导航">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <div class="left-rail-inner">
+      <nav class="left-rail-nav">
+        <a class="rail-link" data-view-link href="#home-view">首页</a>
+        <a class="rail-link" data-view-link href="#scroll-view">沿卷漫游</a>
+        <a class="rail-link" data-view-link href="#archive-view">按年查卷</a>
+      </nav>
+      <p class="left-rail-note" id="railNote"></p>
+    </div>
+  </aside>
+
+  <main class="single-entry-shell single-entry-shell--with-rail">
+    <section class="view-section" id="home-view" data-view="home-view">
+      <div class="home-shell">
+        <section class="cover-stage" id="cover">
+          <div class="cover-art">
+            <div class="cover-title-wrap">
+              <span class="cover-title-en">Ka21</span>
+              <span class="cover-title-dot">·</span>
+              <span class="cover-title-cn">群本纪</span>
+            </div>
+            <div class="cover-date-range" id="coverDateRange"></div>
+          </div>
+        </section>
+        <section class="home-editorial" id="homeEditorial"></section>
+
+        <section class="search-stage" id="homeSearchStage">
+          <div class="search-shell">
+            <label class="search-input-wrap" for="homeSearchInput">
+              <input id="homeSearchInput" class="search-input" type="search" placeholder="试试搜：Dongyi、未来之群、小龙虾、群徽……" autocomplete="off" />
+            </label>
+            <div class="search-toolbar">
+              <div class="search-suggestions" id="searchSuggestions"></div>
+              <button class="search-submit" id="searchSubmit" type="button" aria-label="开始搜索">检索</button>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+          </div>
+        </section>
+        <section class="home-shelves" id="homeShelves"></section>
+      </div>
+    </section>
+
+    <section class="view-section" id="scroll-view" data-view="scroll-view">
+      <div class="scroll-page-shell">
+        <section class="scroll-page-journey" id="journeySection">
+          <div class="scroll-stage scroll-stage--winding">
+            <div class="scroll-backdrop scroll-backdrop--winding" id="scrollBackdrop" aria-hidden="true">
+              <div class="backdrop-wash"></div>
+              <div class="backdrop-ridge ridge-one"></div>
+              <div class="backdrop-ridge ridge-two"></div>
+              <div class="backdrop-ridge ridge-three"></div>
+              <div class="backdrop-spark spark-one"></div>
+              <div class="backdrop-spark spark-two"></div>
+              <div class="backdrop-spark spark-three"></div>
+            </div>
+
+            <div class="scroll-layer scroll-layer--winding">
+              <div class="scroll-caption">
+                <span class="scroll-pill">卷中漫游</span>
+                <span class="scroll-progress" id="scrollProgress">卷轴起笔</span>
+              </div>
+              <div class="scroll-jumpbar" id="scrollJumpbar"></div>
+
+              <div class="winding-scroll-frame" id="windingFrame">
+                <div class="winding-scroll-track" id="windingTrack">
+                  <svg class="winding-scroll-svg" viewBox="0 0 900 2400" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="winding-scroll-fill" d="M300 0 C230 150 250 350 310 500 C370 650 380 860 300 1040 C220 1220 230 1450 320 1620 C410 1790 430 2010 350 2200 C320 2270 290 2335 250 2400 L650 2400 C690 2310 715 2210 640 2070 C565 1930 540 1760 620 1580 C700 1400 705 1215 615 1040 C525 865 520 650 600 470 C680 290 675 125 610 0 Z"></path>
+                    <path class="winding-scroll-edge" d="M300 0 C230 150 250 350 310 500 C370 650 380 860 300 1040 C220 1220 230 1450 320 1620 C410 1790 430 2010 350 2200 C320 2270 290 2335 250 2400"></path>
+                    <path class="winding-scroll-edge" d="M610 0 C675 125 680 290 600 470 C520 650 525 865 615 1040 C705 1215 700 1400 620 1580 C540 1760 565 1930 640 2070 C715 2210 690 2310 650 2400"></path>
+                  </svg>
+                  <div class="scroll-sign-field" id="scrollSignField"></div>
+                  <div class="scroll-entry-field" id="scrollEntryField"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="view-section" id="archive-view" data-view="archive-view">
+      <div class="archive-page-shell">
+        <section class="archive-page-directory archive-page-directory--solo">
+          <div class="year-tabs" id="yearTabs"></div>
+          <div class="archive-list" id="archiveList"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="music-dock" id="musicDock">
+    <button class="music-toggle" id="musicToggle" type="button" aria-label="打开音乐面板" aria-expanded="false" aria-controls="musicPanel">
+      <span class="music-notes" aria-hidden="true">
+        <span class="music-note music-note--one">♪</span>
+        <span class="music-note music-note--two">♫</span>
+        <span class="music-note music-note--three">♪</span>
+      </span>
+      <span class="music-record">
+        <span class="music-record-core"></span>
+      </span>
+    </button>
+    <section class="music-panel" id="musicPanel" hidden>
+      <div class="music-panel-head">
+        <div>
+          <p class="music-kicker">Music</p>
+          <strong>边听边看</strong>
+        </div>
+        <button class="music-close" id="musicClose" type="button" aria-label="收起音乐面板">收起</button>
+      </div>
+      <div class="music-track-list">
+        <button class="music-track is-active" type="button" data-track-index="0">私语</button>
+        <button class="music-track" type="button" data-track-index="1">观卷</button>
+      </div>
+      <div class="music-controls">
+        <div class="music-actions">
+          <button class="music-play-toggle" id="musicPlayToggle" type="button" aria-label="播放">
+            <span class="music-control-icon" aria-hidden="true"></span>
+          </button>
+          <button class="music-mode-toggle" id="musicModeToggle" type="button" aria-label="顺序播放">
+            <span class="music-control-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="music-volume">
+          <span class="music-volume-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 14H8.5L13 18V6L8.5 10H5V14Z" fill="currentColor"/><path d="M16 9.5C17.2 10.3 18 11.6 18 13C18 14.4 17.2 15.7 16 16.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <input class="music-volume-slider" id="musicVolume" type="range" min="0" max="100" step="1" value="68" aria-label="音乐音量">
+          <span class="music-volume-value" id="musicVolumeValue">68%</span>
+        </div>
+        <p class="music-now" id="musicNow">当前未播放，点一首就能开始。</p>
+      </div>
+      <audio id="musicAudio" preload="metadata"></audio>
+    </section>
+  </div>
+
+  <footer class="site-footer"> 
+    <span>群本纪单入口</span>
+    <span id="footerMeta"></span>
+  </footer>
+
+  <script src="entries-data.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
+
