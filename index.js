@@ -105,9 +105,8 @@ function clamp(value, min, max) {
 }
 
 function summarizeYear(year, entries) {
-  const descriptor = yearDescriptors[year] || '这一年的群像继续生长，话题和人物都在往外扩。';
   const dates = entries.map((entry) => entry.shortDate || entry.date);
-  return `${descriptor} 这一年共收录 ${entries.length} 则，最早可见 ${dates[0]}，最晚可见 ${dates[dates.length - 1]}。`;
+  return `这一年共收录 ${entries.length} 则，最早可见 ${dates[0]}，最晚可见 ${dates[dates.length - 1]}。`;
 }
 
 function trimText(text, maxLength = 92) {
