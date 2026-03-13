@@ -1,17 +1,11 @@
 ﻿const site = window.QBJ_SITE;
 const years = ['全部', ...Array.from(new Set(site.entries.map((entry) => String(entry.year)))).sort()];
-const progressLabels = ['起卷', '成形', '补录'];
 const signPositions = [
   { top: 90, x: 18 },
   { top: 880, x: 78 },
   { top: 1870, x: 18 },
   { top: 2920, x: 78 }
 ];
-const yearDescriptors = {
-  '2024': '草蛇灰线，群史起笔，许多后来的热闹都还藏在暗处。',
-  '2025': '声量渐满，人物与名场面一起长出来，群像开始真正成形。',
-  '2026': '回望与续写并行，群体记忆开始带着自觉被重新编排。'
-};
 const viewNotes = {
   'home-view': '',
   'scroll-view': '这一视图适合慢慢滑，像逛一条弯着走的内容河道。',
@@ -40,6 +34,7 @@ let activeTrackIndex = 0;
 let activeMusicMode = 'sequential';
 let activeMusicVolume = 0.68;
 let scrollChapters = [];
+let scrollPositionedEntries = [];
 const allEntries = [...site.entries].sort((left, right) => left.date.localeCompare(right.date));
 const searchIndex = [site.preface, ...allEntries].map((entry) => ({
   slug: entry.slug,
@@ -61,8 +56,6 @@ const railToggleEl = document.getElementById('leftRailToggle');
 const leftRailEl = document.getElementById('leftRail');
 const scrollSectionEl = document.getElementById('journeySection');
 const scrollBackdropEl = document.getElementById('scrollBackdrop');
-const scrollProgressEl = document.getElementById('scrollProgress');
-const scrollJumpbarEl = document.getElementById('scrollJumpbar');
 const windingFrameEl = document.getElementById('windingFrame');
 const windingTrackEl = document.getElementById('windingTrack');
 const scrollEntryFieldEl = document.getElementById('scrollEntryField');
@@ -107,6 +100,22 @@ function clamp(value, min, max) {
 function summarizeYear(year, entries) {
   const dates = entries.map((entry) => entry.shortDate || entry.date);
   return `这一年共收录 ${entries.length} 则，最早可见 ${dates[0]}，最晚可见 ${dates[dates.length - 1]}。`;
+}
+
+function getArchiveMonthLabel(entry) {
+  if (entry.month && entry.month.trim()) {
+    return entry.month.trim();
+  }
+  const matched = String(entry.date || '').match(/^\d{4}\.(\d{1,2})\./);
+  if (!matched) {
+    return '未归月';
+  }
+  return `${Number(matched[1])}月`;
+}
+
+function getArchiveFeatureEntry(entries) {
+  const withImage = entries.filter((entry) => (entry.images || []).length > 0);
+  return withImage[withImage.length - 1] || entries[entries.length - 1] || entries[0];
 }
 
 function trimText(text, maxLength = 92) {
@@ -171,21 +180,68 @@ function getHomePicks() {
 }
 
 function getEntryPositions(entries) {
-  return entries.map((entry, index) => {
-    const lane = index % 4;
-    const cycle = Math.floor(index / 4);
-    const top = 250 + index * 245 + cycle * 28;
-    const xValues = [35, 61, 44, 58];
-    const rotates = [-7, 5, -4, 4];
-    const widths = ['major', 'minor', 'standard', 'minor'];
-    return {
-      entry,
-      top,
-      x: xValues[lane],
-      rotate: rotates[lane] + ((cycle % 3) - 1),
-      widthClass: widths[lane]
-    };
+  const realYears = years.filter((year) => year !== '全部');
+  let cursorTop = 180;
+  const positions = [];
+
+  realYears.forEach((year, yearIndex) => {
+    const yearEntries = entries.filter((entry) => String(entry.year) === year);
+    if (!yearEntries.length) {
+      return;
+    }
+
+    yearEntries.forEach((entry, entryIndex) => {
+      if (entryIndex === 0) {
+        positions.push({
+          entry,
+          top: cursorTop,
+          x: 50,
+          rotate: yearIndex % 2 === 0 ? -2 : 2,
+          widthClass: 'major',
+          laneClass: 'center'
+        });
+        return;
+      }
+
+      const offsetIndex = entryIndex - 1;
+      const lane = offsetIndex % 2;
+      const row = Math.floor(offsetIndex / 2);
+      positions.push({
+        entry,
+        top: cursorTop + 328 + row * 294 + (lane === 1 ? 24 : 0),
+        x: lane === 0 ? 31 : 69,
+        rotate: lane === 0 ? -5 : 5,
+        widthClass: row === 0 ? 'standard' : 'minor',
+        laneClass: lane === 0 ? 'left' : 'right'
+      });
+    });
+
+    const stackedRows = Math.ceil(Math.max(yearEntries.length - 1, 0) / 2);
+    cursorTop += 520 + stackedRows * 294;
   });
+
+  return positions;
+}
+
+function setHoveredScrollEntry(slug = '') {
+  if (!scrollEntryFieldEl) {
+    return;
+  }
+  scrollEntryFieldEl.querySelectorAll('.winding-entry').forEach((node) => {
+    node.classList.toggle('is-hovered', Boolean(slug) && node.getAttribute('data-scroll-slug') === slug);
+  });
+}
+
+function describeScrollSign(entries) {
+  if (!entries.length) {
+    return '暂未收录';
+  }
+  const first = entries[0].entry.shortDate || entries[0].entry.date;
+  const last = entries[entries.length - 1].entry.shortDate || entries[entries.length - 1].entry.date;
+  if (first === last) {
+    return `${entries.length} 则 · ${first}`;
+  }
+  return `${entries.length} 则 · ${first} 至 ${last}`;
 }
 
 function getViewFromHash() {
@@ -323,13 +379,16 @@ function renderScrollSigns() {
   if (!scrollSignFieldEl) {
     return;
   }
-  const realYears = years.filter((year) => year !== '全部');
-  scrollSignFieldEl.innerHTML = realYears.slice(0, signPositions.length).map((year, index) => {
-    const position = signPositions[index];
+  const positionedEntries = scrollPositionedEntries.length ? scrollPositionedEntries : getEntryPositions(allEntries);
+  const chapters = scrollChapters.length ? scrollChapters : getScrollChapters(positionedEntries, 0);
+  scrollSignFieldEl.innerHTML = chapters.slice(0, signPositions.length).map((chapter, index) => {
+    const left = index % 2 === 0 ? 16 : 78;
+    const top = Math.max(chapter.top - 76, 34);
+    const yearEntries = positionedEntries.filter(({ entry }) => String(entry.year) === chapter.year);
     return `
-      <div class="scroll-sign" style="top:${position.top}px; left:${position.x}%;">
-        <span>${year}</span>
-        <p>${yearDescriptors[year] || '这一段的群像逐渐铺开。'}</p>
+      <div class="scroll-sign" style="top:${top}px; left:${left}%;">
+        <span>${chapter.year}</span>
+        <p>${describeScrollSign(yearEntries)}</p>
       </div>
     `;
   }).join('');
@@ -337,18 +396,20 @@ function renderScrollSigns() {
 
 function getScrollChapters(positionedEntries, trackHeight) {
   const realYears = years.filter((year) => year !== '全部');
-  return realYears.map((year, index) => {
+  return realYears.map((year) => {
     const yearEntries = positionedEntries.filter(({ entry }) => String(entry.year) === year);
     const first = yearEntries[0];
     const last = yearEntries[yearEntries.length - 1] || first;
+    const startDate = first ? (first.entry.shortDate || first.entry.date) : '';
+    const endDate = last ? (last.entry.shortDate || last.entry.date) : startDate;
     return {
       year,
-      label: progressLabels[Math.min(index, progressLabels.length - 1)],
-      note: yearDescriptors[year] || '这一段的群像继续往前铺开。',
       count: yearEntries.length,
       top: first ? first.top : 0,
       activeTop: first ? Math.max(first.top - 140, 0) : 0,
-      bottom: last ? last.top + 320 : 0
+      bottom: last ? last.top + 360 : 0,
+      startDate,
+      endDate
     };
   }).filter((chapter) => chapter.count > 0);
 }
@@ -359,11 +420,12 @@ function renderScrollEntries() {
   }
 
   const positionedEntries = getEntryPositions(allEntries);
-  const trackHeight = Math.max(4200, positionedEntries[positionedEntries.length - 1].top + 420);
+  scrollPositionedEntries = positionedEntries;
+  const trackHeight = Math.max(3800, positionedEntries[positionedEntries.length - 1].top + 520);
   scrollChapters = getScrollChapters(positionedEntries, trackHeight);
   windingTrackEl.style.height = `${trackHeight}px`;
 
-  scrollEntryFieldEl.innerHTML = positionedEntries.map(({ entry, top, x, rotate, widthClass }) => {
+  scrollEntryFieldEl.innerHTML = positionedEntries.map(({ entry, top, x, rotate, widthClass, laneClass }) => {
     const imageMarkup = entry.images[0]
       ? `<div class="winding-entry-thumb"><img src="${imagePath(entry.images[0])}" alt="${entry.title}" /></div>`
       : `<div class="winding-entry-thumb winding-entry-thumb--fallback"><strong>${entry.title}</strong></div>`;
@@ -371,7 +433,7 @@ function renderScrollEntries() {
     const kind = `${entry.year} · ${getEntryTypeLabel(entry)}`;
 
     return `
-      <a class="winding-entry winding-entry--${widthClass}" href="${pagePath(entry.slug)}" style="top:${top}px; left:${x}%; --entry-rotate:${rotate}deg;">
+      <a class="winding-entry winding-entry--${widthClass} winding-entry--${laneClass}" data-scroll-slug="${entry.slug}" data-scroll-year="${entry.year}" href="${pagePath(entry.slug)}" style="top:${top}px; left:${x}%; --entry-rotate:${rotate}deg;">
         ${imageMarkup}
         <div class="winding-entry-meta">
           <div class="scroll-entry-topline">
@@ -386,44 +448,6 @@ function renderScrollEntries() {
   }).join('');
 }
 
-function getScrollYearPosition(year) {
-  const positionedEntries = getEntryPositions(allEntries);
-  const firstMatch = positionedEntries.find(({ entry }) => String(entry.year) === String(year));
-  return firstMatch ? firstMatch.top : 0;
-}
-
-function renderScrollJumpbar() {
-  if (!scrollJumpbarEl) {
-    return;
-  }
-
-  if (!scrollChapters.length) {
-    const positionedEntries = getEntryPositions(allEntries);
-    const trackHeight = Math.max(4200, positionedEntries[positionedEntries.length - 1].top + 420);
-    scrollChapters = getScrollChapters(positionedEntries, trackHeight);
-  }
-
-  const currentChapter = scrollChapters[0];
-  if (!currentChapter) {
-    scrollJumpbarEl.innerHTML = '';
-    return;
-  }
-
-  scrollJumpbarEl.innerHTML = `
-    <div class="scroll-jump-compact">
-      <span class="scroll-jump-label">快速切年</span>
-      <div class="scroll-jump-chips">
-        ${scrollChapters.map((chapter, index) => `
-          <button class="scroll-jump-chip ${index === 0 ? 'is-active' : ''}" type="button" data-scroll-year="${chapter.year}">
-            <strong>${chapter.year}</strong>
-            <span>${chapter.count} 则</span>
-          </button>
-        `).join('')}
-      </div>
-      <span class="scroll-jump-current" data-scroll-current>${currentChapter.year}</span>
-    </div>
-  `;
-}
 function renderScrollCoda() {
   if (!scrollCodaEl) {
     return;
@@ -534,8 +558,28 @@ function renderArchiveList() {
     .sort((left, right) => Number(left) - Number(right))
     .map((year) => {
       const entries = [...grouped[year]].sort((left, right) => left.date.localeCompare(right.date));
+      const featureEntry = getArchiveFeatureEntry(entries);
+      const listEntries = entries.length > 1
+        ? entries.filter((entry) => entry.slug !== featureEntry.slug)
+        : [];
+      const monthGroups = listEntries.reduce((accumulator, entry) => {
+        const key = getArchiveMonthLabel(entry);
+        if (!accumulator[key]) {
+          accumulator[key] = [];
+        }
+        accumulator[key].push(entry);
+        return accumulator;
+      }, {});
+      const monthOrder = Object.keys(monthGroups).sort((left, right) => {
+        const leftNum = Number.parseInt(left, 10);
+        const rightNum = Number.parseInt(right, 10);
+        if (Number.isNaN(leftNum) || Number.isNaN(rightNum)) {
+          return left.localeCompare(right, 'zh-CN');
+        }
+        return leftNum - rightNum;
+      });
       return `
-        <section class="year-block year-block--refined">
+        <section class="year-block year-block--directory">
           <div class="year-heading year-heading--refined">
             <div>
               <h3 class="year-title">${year}</h3>
@@ -543,20 +587,51 @@ function renderArchiveList() {
             </div>
             <span class="year-count">${entries.length} 则</span>
           </div>
-          <div class="archive-grid archive-grid--stacked">
-            ${entries.map((entry) => `
-              <a class="archive-card" href="${pagePath(entry.slug)}">
-                ${entry.images[0] ? `<img class="archive-thumb" src="${imagePath(entry.images[0])}" alt="${entry.title}" />` : '<div class="archive-thumb archive-thumb--fallback"></div>'}
-                <div class="archive-card-body">
-                  <div class="archive-card-topline">
-                    <span>${entry.shortDate || entry.date}</span>
-                    <span>${getEntryTypeLabel(entry)}</span>
+          <div class="archive-directory-layout">
+            <a class="archive-year-feature" href="${pagePath(featureEntry.slug)}">
+              <div class="archive-year-feature-head">
+                <span class="archive-year-kicker">最新</span>
+                <span class="archive-year-tag">${featureEntry.shortDate || featureEntry.date}</span>
+              </div>
+              ${featureEntry.images[0] ? `<img class="archive-year-feature-image" src="${imagePath(featureEntry.images[0])}" alt="${featureEntry.title}" />` : '<div class="archive-year-feature-image archive-thumb--fallback"></div>'}
+              <div class="archive-year-feature-body">
+                <h3>${featureEntry.title}</h3>
+                <p>${getArchiveCardCopy(featureEntry)}</p>
+              </div>
+            </a>
+            <div class="archive-directory-panel">
+              ${monthOrder.length ? monthOrder.map((month) => `
+                <section class="archive-month-section">
+                  <div class="archive-month-head">
+                    <span class="archive-month-label">${month}</span>
+                    <span class="archive-month-count">${monthGroups[month].length} 篇</span>
                   </div>
-                  <h3>${entry.title}</h3>
-                  <p>${getArchiveCardCopy(entry)}</p>
+                  <div class="archive-month-list">
+                    ${monthGroups[month].map((entry) => `
+                      <a class="archive-line" href="${pagePath(entry.slug)}">
+                        ${entry.images[0]
+                          ? `<img class="archive-line-thumb" src="${imagePath(entry.images[0])}" alt="${entry.title}" />`
+                          : '<div class="archive-line-thumb archive-line-thumb--fallback">卷</div>'}
+                        <div class="archive-line-main">
+                          <div class="archive-line-meta">
+                            <span class="archive-line-date">${entry.shortDate || entry.date}</span>
+                            <span class="archive-line-kind">${getEntryTypeLabel(entry)}</span>
+                          </div>
+                          <strong>${entry.title}</strong>
+                          <p>${getArchiveCardCopy(entry)}</p>
+                        </div>
+                      </a>
+                    `).join('')}
+                  </div>
+                </section>
+              `).join('') : `
+                <div class="archive-directory-empty">
+                  <span class="archive-directory-empty-tag">${featureEntry.shortDate || featureEntry.date}</span>
+                  <strong>本年仅此一篇</strong>
+                  <p>左侧已经展开这一年的最新条目，直接点进去就可以读正文。</p>
                 </div>
-              </a>
-            `).join('')}
+              `}
+            </div>
           </div>
         </section>
       `;
@@ -988,9 +1063,6 @@ function initMusicPlayer() {
 }
 function updateScrollChapterState(focusY = 0) {
   if (!scrollChapters.length) {
-    if (scrollProgressEl) {
-      scrollProgressEl.textContent = '当前年份';
-    }
     return;
   }
 
@@ -1001,25 +1073,24 @@ function updateScrollChapterState(focusY = 0) {
     }
   });
 
-  if (scrollProgressEl) {
-    scrollProgressEl.textContent = activeChapter.year;
-  }
+  const activeEntryRecord = scrollPositionedEntries.reduce((closest, current) => {
+    if (!closest) {
+      return current;
+    }
+    const currentDistance = Math.abs(current.top - focusY);
+    const closestDistance = Math.abs(closest.top - focusY);
+    return currentDistance < closestDistance ? current : closest;
+  }, null);
+  const activeEntry = activeEntryRecord?.entry;
 
-  if (!scrollJumpbarEl) {
-    return;
+  if (scrollEntryFieldEl) {
+    scrollEntryFieldEl.querySelectorAll('.winding-entry').forEach((node) => {
+      node.classList.toggle('is-current', node.getAttribute('data-scroll-slug') === activeEntry?.slug);
+    });
   }
-
-  const currentEl = scrollJumpbarEl.querySelector('[data-scroll-current]');
-  if (currentEl) {
-    currentEl.textContent = activeChapter.year;
-  }
-
-  scrollJumpbarEl.querySelectorAll('[data-scroll-year]').forEach((button) => {
-    button.classList.toggle('is-active', button.getAttribute('data-scroll-year') === activeChapter.year);
-  });
 }
 function updateJourney() {
-  if (activeView !== 'scroll-view' || !scrollSectionEl || !windingFrameEl || !windingTrackEl || !scrollBackdropEl || !scrollProgressEl) {
+  if (activeView !== 'scroll-view' || !scrollSectionEl || !windingFrameEl || !windingTrackEl || !scrollBackdropEl) {
     return;
   }
 
@@ -1063,19 +1134,26 @@ if (yearTabsEl) {
   });
 }
 
-if (scrollJumpbarEl) {
-  scrollJumpbarEl.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-scroll-year]');
-    if (!button || !scrollSectionEl) {
+if (scrollEntryFieldEl) {
+  scrollEntryFieldEl.addEventListener('pointerover', (event) => {
+    const card = event.target.closest('.winding-entry');
+    if (!card) {
       return;
     }
+    setHoveredScrollEntry(card.getAttribute('data-scroll-slug') || '');
+  });
 
-    const targetTop = getScrollYearPosition(button.dataset.scrollYear);
-    setActiveView('scroll-view');
-    window.scrollTo({
-      top: scrollSectionEl.offsetTop + Math.max(targetTop - 140, 0),
-      behavior: 'smooth'
-    });
+  scrollEntryFieldEl.addEventListener('pointerout', (event) => {
+    const card = event.target.closest('.winding-entry');
+    if (!card) {
+      return;
+    }
+    const related = event.relatedTarget ? event.relatedTarget.closest('.winding-entry') : null;
+    if (related && related !== card) {
+      setHoveredScrollEntry(related.getAttribute('data-scroll-slug') || '');
+      return;
+    }
+    setHoveredScrollEntry('');
   });
 }
 if (searchSuggestionsEl) {
@@ -1116,9 +1194,8 @@ renderHomeEditorial();
 renderHomeShelves();
 renderSearchSuggestions();
 renderSearchResults();
-renderScrollSigns();
 renderScrollEntries();
-renderScrollJumpbar();
+renderScrollSigns();
 renderScrollCoda();
 renderYearTabs();
 renderArchiveList();
