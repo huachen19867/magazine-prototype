@@ -11,7 +11,11 @@
   <div class="grain" aria-hidden="true"></div>
   <header class="topbar">
     <a class="brand" href="index.html#home-view">Ka21·群本纪</a>
-    <nav>
+    <button class="topbar-nav-toggle" id="topbarNavToggle" type="button" aria-expanded="false" aria-controls="topbarNav">
+      <span class="topbar-nav-toggle-label" id="topbarNavToggleLabel">展开入口</span>
+      <span class="topbar-nav-toggle-icon" aria-hidden="true"></span>
+    </button>
+    <nav id="topbarNav">
       <a data-view-link href="#home-view">首页</a>
       <a href="pages/preface.html">卷首</a>
       <a data-view-link href="#scroll-view">沿卷漫游</a>

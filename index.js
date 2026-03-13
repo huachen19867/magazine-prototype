@@ -54,6 +54,10 @@ const searchIndex = [site.preface, ...allEntries].map((entry) => ({
 const railNoteEl = document.getElementById('railNote');
 const railToggleEl = document.getElementById('leftRailToggle');
 const leftRailEl = document.getElementById('leftRail');
+const topbarEl = document.querySelector('.topbar');
+const topbarNavEl = document.getElementById('topbarNav');
+const topbarNavToggleEl = document.getElementById('topbarNavToggle');
+const topbarNavToggleLabelEl = document.getElementById('topbarNavToggleLabel');
 const scrollSectionEl = document.getElementById('journeySection');
 const scrollBackdropEl = document.getElementById('scrollBackdrop');
 const windingFrameEl = document.getElementById('windingFrame');
@@ -84,6 +88,7 @@ const musicAudioEl = document.getElementById('musicAudio');
 const musicTrackButtons = Array.from(document.querySelectorAll('[data-track-index]'));
 const viewSections = Array.from(document.querySelectorAll('.view-section'));
 const viewLinks = Array.from(document.querySelectorAll('[data-view-link]'));
+const mobileNavMedia = window.matchMedia('(max-width: 720px)');
 
 function imagePath(path) {
   return path || '';
@@ -167,6 +172,33 @@ function getEntryIntro(entry, paragraphLimit = 2, maxLength = 88) {
   const visibleParagraphs = getVisibleEntryParagraphs(entry).slice(0, paragraphLimit);
   const source = visibleParagraphs.length ? visibleParagraphs.join(' ') : (entry.summary || '');
   return trimText(source.replace(/<br\s*\/?>/gi, ' '), maxLength);
+}
+
+function setTopbarNavOpen(isOpen) {
+  if (!topbarEl || !topbarNavToggleEl || !topbarNavToggleLabelEl) {
+    return;
+  }
+  const nextOpen = Boolean(isOpen) && mobileNavMedia.matches;
+  topbarEl.classList.toggle('nav-open', nextOpen);
+  topbarNavToggleEl.setAttribute('aria-expanded', String(nextOpen));
+  topbarNavToggleLabelEl.textContent = nextOpen ? '收起入口' : '展开入口';
+}
+
+function syncTopbarNavState() {
+  if (!topbarEl) {
+    return;
+  }
+  if (mobileNavMedia.matches) {
+    setTopbarNavOpen(topbarEl.classList.contains('nav-open'));
+    return;
+  }
+  topbarEl.classList.remove('nav-open');
+  if (topbarNavToggleEl) {
+    topbarNavToggleEl.setAttribute('aria-expanded', 'false');
+  }
+  if (topbarNavToggleLabelEl) {
+    topbarNavToggleLabelEl.textContent = '展开入口';
+  }
 }
 
 function getHomePicks() {
@@ -373,6 +405,7 @@ function setActiveView(view) {
   } else {
     footerMetaEl.textContent = `当前目录含卷首与 ${site.entries.length} 篇正文，可按年份进入。`;
   }
+  setTopbarNavOpen(false);
 }
 
 function renderScrollSigns() {
@@ -1183,6 +1216,23 @@ if (searchSubmitEl) {
   });
 }
 
+if (topbarNavToggleEl) {
+  topbarNavToggleEl.addEventListener('click', () => {
+    const isOpen = topbarEl ? topbarEl.classList.contains('nav-open') : false;
+    setTopbarNavOpen(!isOpen);
+  });
+}
+
+if (topbarNavEl) {
+  topbarNavEl.addEventListener('click', (event) => {
+    const link = event.target.closest('a');
+    if (!link) {
+      return;
+    }
+    setTopbarNavOpen(false);
+  });
+}
+
 if (railToggleEl && leftRailEl) {
   railToggleEl.addEventListener('click', () => {
     leftRailEl.classList.toggle('collapsed');
@@ -1200,8 +1250,10 @@ renderScrollCoda();
 renderYearTabs();
 renderArchiveList();
 initMusicPlayer();
+syncTopbarNavState();
 setActiveView(getViewFromHash());
 window.addEventListener('hashchange', handleHashChange);
 window.addEventListener('scroll', scheduleUpdate, { passive: true });
 window.addEventListener('resize', scheduleUpdate);
+mobileNavMedia.addEventListener('change', syncTopbarNavState);
 
