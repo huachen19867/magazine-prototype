@@ -864,10 +864,28 @@ img {
 }
 
 @media (max-width: 720px) {
-  .topbar,
   .site-footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand brand"
+      "nav rail";
+    align-items: end;
+    row-gap: 12px;
+  }
+
+  .brand {
+    grid-area: brand;
+  }
+
+  .topbar nav {
+    grid-area: nav;
+    gap: 16px;
   }
 
   .archive-grid {
@@ -2186,30 +2204,6 @@ img {
     flex-direction: column;
     align-items: start;
   }
-
-  .left-rail {
-    left: 10px;
-    right: 10px;
-    bottom: 12px;
-  }
-
-  .left-rail-toggle {
-    display: none;
-  }
-
-  .left-rail-inner {
-    width: 100%;
-  }
-
-  .left-rail-nav {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .rail-link {
-    flex: 1;
-    text-align: center;
-  }
 }
 
 
@@ -2689,7 +2683,7 @@ img {
 
   .music-dock {
     right: 14px;
-    bottom: 92px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
   }
 
   .music-toggle {
@@ -2710,6 +2704,55 @@ img {
     grid-template-columns: 16px minmax(0, 1fr) 40px;
     gap: 8px;
     padding: 9px 10px;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar .left-rail {
+    position: static;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: auto;
+    margin-left: auto;
+    z-index: auto;
+    grid-area: rail;
+  }
+
+  .topbar .left-rail.collapsed {
+    width: auto;
+  }
+
+  .topbar .left-rail-toggle {
+    display: none;
+  }
+
+  .topbar .left-rail-inner,
+  .topbar .left-rail.collapsed .left-rail-inner {
+    width: auto;
+    padding: 6px;
+    border-radius: 26px;
+  }
+
+  .topbar .left-rail-nav,
+  .topbar .left-rail.collapsed .left-rail-nav {
+    display: flex;
+    width: auto;
+    gap: 6px;
+  }
+
+  .topbar .rail-link,
+  .topbar .left-rail.collapsed .rail-link {
+    flex: 0 0 auto;
+    min-width: 42px;
+    min-height: 72px;
+    padding: 8px 4px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    text-align: center;
+    font-size: 0.76rem;
+    line-height: 1.06;
   }
 }
 

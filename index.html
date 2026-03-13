@@ -16,23 +16,22 @@
       <a data-view-link href="#scroll-view">长卷</a>
       <a data-view-link href="#archive-view">目录</a>
     </nav>
+    <aside class="left-rail" id="leftRail">
+      <button class="left-rail-toggle" id="leftRailToggle" type="button" aria-label="切换导航">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="left-rail-inner">
+        <nav class="left-rail-nav">
+          <a class="rail-link" data-view-link href="#home-view">首页</a>
+          <a class="rail-link" data-view-link href="#scroll-view">沿卷漫游</a>
+          <a class="rail-link" data-view-link href="#archive-view">按年查卷</a>
+        </nav>
+        <p class="left-rail-note" id="railNote"></p>
+      </div>
+    </aside>
   </header>
-
-  <aside class="left-rail" id="leftRail">
-    <button class="left-rail-toggle" id="leftRailToggle" type="button" aria-label="切换导航">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-    <div class="left-rail-inner">
-      <nav class="left-rail-nav">
-        <a class="rail-link" data-view-link href="#home-view">首页</a>
-        <a class="rail-link" data-view-link href="#scroll-view">沿卷漫游</a>
-        <a class="rail-link" data-view-link href="#archive-view">按年查卷</a>
-      </nav>
-      <p class="left-rail-note" id="railNote"></p>
-    </div>
-  </aside>
 
   <main class="single-entry-shell single-entry-shell--with-rail">
     <section class="view-section" id="home-view" data-view="home-view">
