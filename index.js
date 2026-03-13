@@ -580,21 +580,28 @@ function renderMobileScrollList() {
     return accumulator;
   }, {});
 
-  mobileScrollListEl.innerHTML = Object.keys(groupedEntries)
-    .sort((left, right) => Number(left) - Number(right))
+  const orderedYears = Object.keys(groupedEntries).sort((left, right) => Number(left) - Number(right));
+  const expandedYear = orderedYears[orderedYears.length - 1];
+
+  mobileScrollListEl.innerHTML = orderedYears
     .map((year) => {
       const entries = groupedEntries[year];
+      const isOpen = year === expandedYear;
       return `
-        <section class="mobile-scroll-year">
-          <div class="mobile-scroll-year-head">
+        <section class="mobile-scroll-year ${isOpen ? 'is-open' : ''}" data-mobile-scroll-year="${year}">
+          <button class="mobile-scroll-year-head" type="button" data-mobile-scroll-toggle="${year}" aria-expanded="${isOpen ? 'true' : 'false'}">
             <div>
               <span class="mobile-scroll-year-kicker">沿卷漫游</span>
               <h2>${year}</h2>
             </div>
-            <span class="mobile-scroll-year-count">${entries.length} 则</span>
-          </div>
-          <p class="mobile-scroll-year-note">${summarizeYear(year, entries)}</p>
-          <div class="mobile-scroll-cards">
+            <span class="mobile-scroll-year-meta">
+              <span class="mobile-scroll-year-count">${entries.length} 则</span>
+              <span class="mobile-scroll-year-arrow" aria-hidden="true"></span>
+            </span>
+          </button>
+          <div class="mobile-scroll-year-body">
+            <p class="mobile-scroll-year-note">${summarizeYear(year, entries)}</p>
+            <div class="mobile-scroll-cards">
             ${entries.map((entry, index) => `
               <a class="mobile-scroll-card ${index === 0 ? 'mobile-scroll-card--lead' : ''}" href="${pagePath(entry.slug)}">
                 <div class="mobile-scroll-card-head">
@@ -610,6 +617,7 @@ function renderMobileScrollList() {
                 </div>
               </a>
             `).join('')}
+            </div>
           </div>
         </section>
       `;
@@ -1252,6 +1260,26 @@ if (scrollEntryFieldEl) {
     setHoveredScrollEntry('');
   });
 }
+
+if (mobileScrollListEl) {
+  mobileScrollListEl.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-mobile-scroll-toggle]');
+    if (!toggle) {
+      return;
+    }
+
+    const targetYear = toggle.getAttribute('data-mobile-scroll-toggle');
+    mobileScrollListEl.querySelectorAll('[data-mobile-scroll-year]').forEach((section) => {
+      const isTarget = section.getAttribute('data-mobile-scroll-year') === targetYear;
+      section.classList.toggle('is-open', isTarget);
+      const button = section.querySelector('[data-mobile-scroll-toggle]');
+      if (button) {
+        button.setAttribute('aria-expanded', String(isTarget));
+      }
+    });
+  });
+}
+
 if (searchSuggestionsEl) {
   searchSuggestionsEl.addEventListener('click', (event) => {
     const button = event.target.closest('[data-prompt]');
