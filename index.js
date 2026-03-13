@@ -594,20 +594,17 @@ function renderMobileScrollList() {
 
   mobileScrollListEl.innerHTML = Object.keys(groupedEntries)
     .sort((left, right) => Number(left) - Number(right))
-    .map((year) => {
+    .map((year, yearIndex) => {
       const entries = groupedEntries[year];
       return `
         <section class="mobile-scroll-year">
           <div class="mobile-scroll-marker">
-            <span class="mobile-scroll-marker-kicker">沿卷漫游</span>
-            <div class="mobile-scroll-marker-main">
-              <h2>${year}</h2>
-              <p>${getMobileScrollYearSummary(entries)}</p>
-            </div>
+            <span class="mobile-scroll-marker-year">${year}</span>
+            <p>${getMobileScrollYearSummary(entries)}</p>
           </div>
           <div class="mobile-scroll-cards">
             ${entries.map((entry, index) => `
-              <a class="mobile-scroll-card ${index === 0 ? 'mobile-scroll-card--lead' : ''} ${index % 2 === 0 ? 'mobile-scroll-card--drift-a' : 'mobile-scroll-card--drift-b'}" href="${pagePath(entry.slug)}">
+              <a class="mobile-scroll-card ${index === 0 ? 'mobile-scroll-card--lead' : ''} ${index % 2 === 0 ? 'mobile-scroll-card--drift-a' : 'mobile-scroll-card--drift-b'} ${yearIndex % 2 === 0 ? 'mobile-scroll-card--year-a' : 'mobile-scroll-card--year-b'}" href="${pagePath(entry.slug)}">
                 <div class="mobile-scroll-card-head">
                   <span class="mobile-scroll-card-date">${entry.shortDate || entry.date}</span>
                   <span class="mobile-scroll-card-kind">${getEntryTypeLabel(entry)}</span>

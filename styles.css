@@ -1562,53 +1562,100 @@ img {
   .mobile-scroll-list {
     position: relative;
     display: grid;
-    gap: 16px;
+    gap: 26px;
     margin: 10px 0 24px;
-    padding: 8px 0 12px;
+    padding: 18px 0 24px;
+    background:
+      radial-gradient(circle at 12% 22%, rgba(255, 246, 221, 0.32), transparent 16%),
+      radial-gradient(circle at 88% 30%, rgba(255, 246, 221, 0.24), transparent 14%),
+      linear-gradient(180deg, rgba(240, 229, 203, 0.32), rgba(208, 181, 135, 0.34) 72%, rgba(164, 124, 84, 0.26));
+    border-radius: 30px;
+    overflow: hidden;
   }
 
   .mobile-scroll-list::before {
     content: '';
     position: absolute;
-    top: 12px;
-    bottom: 18px;
-    left: 18px;
-    width: 2px;
-    border-radius: 999px;
-    background: linear-gradient(180deg, rgba(197, 161, 98, 0.14), rgba(175, 124, 55, 0.62), rgba(197, 161, 98, 0.12));
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: min(72vw, 520px);
+    transform: translateX(-50%);
+    border-left: 4px solid rgba(195, 154, 78, 0.84);
+    border-right: 4px solid rgba(195, 154, 78, 0.84);
+    background:
+      linear-gradient(180deg, rgba(255, 250, 236, 0.96), rgba(244, 232, 205, 0.98) 62%, rgba(232, 218, 186, 0.96));
+    box-shadow:
+      inset 0 0 26px rgba(207, 182, 131, 0.24),
+      0 0 0 1px rgba(255, 248, 230, 0.34);
+  }
+
+  .mobile-scroll-list::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 44px;
+    width: min(84vw, 620px);
+    height: 138px;
+    transform: translateX(-50%);
+    background:
+      radial-gradient(ellipse at 20% 60%, rgba(112, 83, 51, 0.42), transparent 54%),
+      radial-gradient(ellipse at 80% 62%, rgba(112, 83, 51, 0.28), transparent 48%);
+    opacity: 0.34;
+    pointer-events: none;
   }
 
   .mobile-scroll-year {
     position: relative;
     display: grid;
     gap: 14px;
+    z-index: 1;
   }
 
   .mobile-scroll-marker {
     position: relative;
-    margin-left: 0;
-    padding-left: 34px;
+    justify-self: end;
+    width: min(170px, calc(100% - 120px));
+    margin-right: 10px;
+    padding: 12px 14px;
+    border-radius: 20px;
+    background: rgba(255, 252, 246, 0.92);
+    border: 1px solid rgba(31, 23, 19, 0.08);
+    box-shadow: 0 16px 28px rgba(59, 41, 24, 0.12);
+    transform: rotate(-4deg);
   }
 
   .mobile-scroll-marker::before {
     content: '';
     position: absolute;
-    left: 13px;
-    top: 8px;
-    width: 12px;
-    height: 12px;
+    left: -22px;
+    top: 50%;
+    width: 22px;
+    height: 1px;
+    margin-top: -0.5px;
+    background: rgba(175, 124, 55, 0.42);
+  }
+
+  .mobile-scroll-marker::after {
+    content: '';
+    position: absolute;
+    left: -27px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
     border-radius: 999px;
     background: rgba(175, 124, 55, 0.96);
     box-shadow: 0 0 0 6px rgba(248, 236, 208, 0.96);
   }
 
-  .mobile-scroll-marker-kicker,
+  .mobile-scroll-marker-year,
   .mobile-scroll-card-date,
   .mobile-scroll-card-kind {
     font-family: var(--sans);
   }
 
-  .mobile-scroll-marker-kicker {
+  .mobile-scroll-marker-year {
     display: inline-flex;
     margin-bottom: 8px;
     padding: 5px 9px;
@@ -1619,16 +1666,11 @@ img {
     letter-spacing: 0.08em;
   }
 
-  .mobile-scroll-marker-main h2 {
+  .mobile-scroll-marker p {
     margin: 0;
-    font-size: 2rem;
-    line-height: 1;
-  }
-
-  .mobile-scroll-marker-main p {
-    margin: 8px 0 0;
     color: var(--muted);
-    line-height: 1.72;
+    line-height: 1.6;
+    font-size: 0.86rem;
   }
 
   .mobile-scroll-cards {
@@ -1639,7 +1681,8 @@ img {
   .mobile-scroll-card {
     position: relative;
     display: block;
-    margin-left: 34px;
+    width: min(100%, min(72vw, 520px) - 24px);
+    margin: 0 auto;
     padding: 16px;
     border-radius: 24px;
     background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(245, 236, 217, 0.96));
@@ -1654,35 +1697,33 @@ img {
   .mobile-scroll-card::before {
     content: '';
     position: absolute;
-    left: -27px;
-    top: 26px;
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    background: rgba(175, 124, 55, 0.9);
-    box-shadow: 0 0 0 5px rgba(248, 236, 208, 0.96);
+    display: none;
   }
 
   .mobile-scroll-card::after {
     content: '';
     position: absolute;
-    left: -22px;
-    top: 30px;
-    width: 22px;
-    height: 1px;
-    background: rgba(175, 124, 55, 0.42);
+    display: none;
   }
 
   .mobile-scroll-card--lead {
-    margin-left: 28px;
+    margin-top: 2px;
   }
 
   .mobile-scroll-card--drift-a {
-    margin-right: 4px;
+    transform: translateX(-6px) rotate(-1.2deg);
   }
 
   .mobile-scroll-card--drift-b {
-    margin-left: 40px;
+    transform: translateX(8px) rotate(1.4deg);
+  }
+
+  .mobile-scroll-card--year-a {
+    box-shadow: 0 18px 34px rgba(59, 41, 24, 0.1);
+  }
+
+  .mobile-scroll-card--year-b {
+    box-shadow: 0 20px 38px rgba(59, 41, 24, 0.12);
   }
 
   .mobile-scroll-card-head {
