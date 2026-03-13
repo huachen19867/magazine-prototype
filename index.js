@@ -91,6 +91,26 @@ const viewSections = Array.from(document.querySelectorAll('.view-section'));
 const viewLinks = Array.from(document.querySelectorAll('[data-view-link]'));
 const mobileNavMedia = window.matchMedia('(max-width: 720px)');
 
+function isMobileLayout() {
+  return mobileNavMedia.matches;
+}
+
+function normalizeMobileView(view) {
+  if (isMobileLayout() && view === 'scroll-view') {
+    return 'archive-view';
+  }
+  return view;
+}
+
+function normalizeMobileHash() {
+  if (!isMobileLayout()) {
+    return;
+  }
+  if (window.location.hash === '#scroll-view' || window.location.hash === '#journeySection') {
+    window.history.replaceState(null, '', '#archive-view');
+  }
+}
+
 function imagePath(path) {
   return path || '';
 }
@@ -189,8 +209,12 @@ function syncTopbarNavState() {
   if (!topbarEl) {
     return;
   }
+  normalizeMobileHash();
   if (mobileNavMedia.matches) {
     setTopbarNavOpen(topbarEl.classList.contains('nav-open'));
+    if (activeView === 'scroll-view') {
+      setActiveView('archive-view');
+    }
     return;
   }
   topbarEl.classList.remove('nav-open');
@@ -280,7 +304,7 @@ function describeScrollSign(entries) {
 function getViewFromHash() {
   const hash = window.location.hash.replace('#', '');
   if (hash === 'journeySection' || hash === 'scroll-view') {
-    return 'scroll-view';
+    return normalizeMobileView('scroll-view');
   }
   if (hash === 'archive-view' || hash === 'home-view') {
     return hash;
@@ -379,28 +403,28 @@ function renderSearchResults(query = '') {
   `).join('');
 }
 function setActiveView(view) {
-  activeView = view;
+  activeView = normalizeMobileView(view);
   viewSections.forEach((section) => {
-    section.classList.toggle('active', section.dataset.view === view);
+    section.classList.toggle('active', section.dataset.view === activeView);
   });
   viewLinks.forEach((link) => {
-    const isActive = link.getAttribute('href') === `#${view}`;
+    const isActive = link.getAttribute('href') === `#${activeView}`;
     link.classList.toggle('is-active', isActive);
   });
   if (railNoteEl) {
-    railNoteEl.textContent = viewNotes[view] || '';
+    railNoteEl.textContent = viewNotes[activeView] || '';
   }
 
-  if (view !== 'scroll-view') {
+  if (activeView !== 'scroll-view') {
     window.scrollTo(0, 0);
   }
 
   if (!footerMetaEl) {
     return;
   }
-  if (view === 'home-view') {
+  if (activeView === 'home-view') {
     footerMetaEl.textContent = `当前共 ${site.entries.length + 1} 个页面入口，卷首与正文都已接入同一入口页。`;
-  } else if (view === 'scroll-view') {
+  } else if (activeView === 'scroll-view') {
     footerMetaEl.textContent = `当前长卷已纳入 ${site.entries.length} 篇正文，点击即可进入对应文章页。`;
     updateJourney();
   } else {
