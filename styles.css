@@ -1561,15 +1561,15 @@ img {
 
   .mobile-scroll-list {
     display: grid;
-    gap: 18px;
-    margin: 6px 0 18px;
+    gap: 24px;
+    margin: 10px 0 24px;
   }
 
   .mobile-scroll-year {
     position: relative;
     display: grid;
-    gap: 14px;
-    padding: 18px 14px 18px 22px;
+    gap: 18px;
+    padding: 22px 16px 22px 24px;
     border-radius: 26px;
     background: rgba(255, 250, 241, 0.88);
     border: 1px solid rgba(31, 23, 19, 0.08);
@@ -1579,8 +1579,8 @@ img {
   .mobile-scroll-year::before {
     content: '';
     position: absolute;
-    top: 22px;
-    bottom: 22px;
+    top: 26px;
+    bottom: 26px;
     left: 14px;
     width: 2px;
     border-radius: 999px;
@@ -1652,7 +1652,7 @@ img {
 
   .mobile-scroll-year-body {
     display: grid;
-    gap: 14px;
+    gap: 18px;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
@@ -1664,7 +1664,7 @@ img {
     max-height: 4000px;
     opacity: 1;
     transform: translateY(0);
-    margin-top: 4px;
+    margin-top: 8px;
   }
 
   .mobile-scroll-year.is-open .mobile-scroll-year-arrow {
@@ -1679,14 +1679,14 @@ img {
 
   .mobile-scroll-cards {
     display: grid;
-    gap: 14px;
+    gap: 18px;
   }
 
   .mobile-scroll-card {
     position: relative;
     display: block;
     margin-left: 10px;
-    padding: 14px;
+    padding: 16px;
     border-radius: 24px;
     background: linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(245, 236, 217, 0.96));
     border: 1px solid rgba(31, 23, 19, 0.08);
@@ -1724,7 +1724,7 @@ img {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
 
   .mobile-scroll-card-date,
@@ -1748,7 +1748,7 @@ img {
     border-radius: 18px;
     background: linear-gradient(180deg, rgba(255, 249, 238, 0.98), rgba(236, 224, 198, 0.92));
     border: 1px solid rgba(31, 23, 19, 0.06);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 
   .mobile-scroll-card-image img {
@@ -1758,7 +1758,7 @@ img {
   }
 
   .mobile-scroll-card-body h3 {
-    margin: 0 0 10px;
+    margin: 0 0 12px;
     font-size: 1.48rem;
     line-height: 1.08;
   }
