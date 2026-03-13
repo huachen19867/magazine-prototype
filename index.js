@@ -62,6 +62,7 @@ const scrollSectionEl = document.getElementById('journeySection');
 const scrollBackdropEl = document.getElementById('scrollBackdrop');
 const windingFrameEl = document.getElementById('windingFrame');
 const windingTrackEl = document.getElementById('windingTrack');
+const mobileScrollListEl = document.getElementById('mobileScrollList');
 const scrollEntryFieldEl = document.getElementById('scrollEntryField');
 const scrollSignFieldEl = document.getElementById('scrollSignField');
 const scrollCodaEl = document.getElementById('scrollCoda');
@@ -560,6 +561,61 @@ function getArchiveCardCopy(entry) {
 
   return (entry.summary || '').replace(/\.\.\.$/, '').trim();
 }
+
+function getMobileScrollCardCopy(entry) {
+  return getEntryIntro(entry, 2, 90);
+}
+
+function renderMobileScrollList() {
+  if (!mobileScrollListEl) {
+    return;
+  }
+
+  const groupedEntries = allEntries.reduce((accumulator, entry) => {
+    const key = String(entry.year);
+    if (!accumulator[key]) {
+      accumulator[key] = [];
+    }
+    accumulator[key].push(entry);
+    return accumulator;
+  }, {});
+
+  mobileScrollListEl.innerHTML = Object.keys(groupedEntries)
+    .sort((left, right) => Number(left) - Number(right))
+    .map((year) => {
+      const entries = groupedEntries[year];
+      return `
+        <section class="mobile-scroll-year">
+          <div class="mobile-scroll-year-head">
+            <div>
+              <span class="mobile-scroll-year-kicker">沿卷漫游</span>
+              <h2>${year}</h2>
+            </div>
+            <span class="mobile-scroll-year-count">${entries.length} 则</span>
+          </div>
+          <p class="mobile-scroll-year-note">${summarizeYear(year, entries)}</p>
+          <div class="mobile-scroll-cards">
+            ${entries.map((entry, index) => `
+              <a class="mobile-scroll-card ${index === 0 ? 'mobile-scroll-card--lead' : ''}" href="${pagePath(entry.slug)}">
+                <div class="mobile-scroll-card-head">
+                  <span class="mobile-scroll-card-date">${entry.shortDate || entry.date}</span>
+                  <span class="mobile-scroll-card-kind">${getEntryTypeLabel(entry)}</span>
+                </div>
+                ${entry.images[0]
+                  ? `<div class="mobile-scroll-card-image"><img src="${imagePath(entry.images[0])}" alt="${entry.title}" /></div>`
+                  : ''}
+                <div class="mobile-scroll-card-body">
+                  <h3>${entry.title}</h3>
+                  <p>${getMobileScrollCardCopy(entry)}</p>
+                </div>
+              </a>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }).join('');
+}
+
 function renderYearTabs() {
   if (!yearTabsEl) {
     return;
@@ -1123,7 +1179,14 @@ function updateScrollChapterState(focusY = 0) {
   }
 }
 function updateJourney() {
-  if (activeView !== 'scroll-view' || !scrollSectionEl || !windingFrameEl || !windingTrackEl || !scrollBackdropEl) {
+  if (
+    activeView !== 'scroll-view'
+    || mobileNavMedia.matches
+    || !scrollSectionEl
+    || !windingFrameEl
+    || !windingTrackEl
+    || !scrollBackdropEl
+  ) {
     return;
   }
 
@@ -1246,6 +1309,7 @@ renderSearchSuggestions();
 renderSearchResults();
 renderScrollEntries();
 renderScrollSigns();
+renderMobileScrollList();
 renderScrollCoda();
 renderYearTabs();
 renderArchiveList();
